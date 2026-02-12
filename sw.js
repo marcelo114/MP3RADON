@@ -1,11 +1,4 @@
-[HTML]
-
-
-[CSS]
-
-
-[JS]
-const CACHE_NAME = 'radio-mp3-v1';
+const CACHE_NAME = 'mp3-radio-v2';
 const ASSETS = [
   './',
   './index.html',
@@ -16,14 +9,29 @@ const ASSETS = [
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap'
 ];
 
-// Instalação do Service Worker
+// Instalação: Salva arquivos no cache
 self.addEventListener('install', (e) => {
   e.waitUntil(
     caches.open(CACHE_NAME).then((cache) => cache.addAll(ASSETS))
   );
 });
 
-// Estratégia de Cache: Network First (Tenta rede, se falhar usa cache)
+// Ativação: Limpa caches antigos
+self.addEventListener('activate', (event) => {
+  event.waitUntil(
+    caches.keys().then((cacheNames) => {
+      return Promise.all(
+        cacheNames.map((cache) => {
+          if (cache !== CACHE_NAME) {
+            return caches.delete(cache);
+          }
+        })
+      );
+    })
+  );
+});
+
+// Busca: Serve do cache se estiver offline
 self.addEventListener('fetch', (e) => {
   e.respondWith(
     fetch(e.request).catch(() => caches.match(e.request))
